@@ -35,20 +35,34 @@ loadSprite('blue-steel', 'gqVoI2b.png')
 loadSprite('blue-evil-shroom', 'SvV4ueD.png')
 loadSprite('blue-surprise', 'RMqCc1G.png')
 
-scene("game", ({ score }) => {
+scene("game", ({ level, score }) => {
     layers(['bg', 'obj', 'ui'], 'obj')
 
-    const map = [
-        '                                  ',
-        '                                  ',
-        '                                  ',
-        '                                  ',
-        '                                  ',
-        '     %  =*=%=                     ',
-        '                                  ',
-        '                         -+       ',
-        '                   ^   ^ ()       ',
-        '===========================  =====',
+    const maps = [  
+    [
+        '                                    ',
+        '                                    ',
+        '                                    ',
+        '                                    ',
+        '                                    ',
+        '     %  =*=%=                       ',
+        '                                    ',
+        '                          -+        ',
+        '                   ^   ^  ()        ',
+        '============================  ======',
+    ],
+    [
+        'b                                  b',
+        'b                                  b',
+        'b                                  b',
+        'b                                  b',
+        'b                                  b',
+        'b     @@@@@              x x       b',
+        'b                      x x x       b',
+        'b                    x x x x  x -+ b',
+        'b           z    z x x x x x  x () b',
+        '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
+    ]
     ]
 
     const levelCfg = {
@@ -62,12 +76,17 @@ scene("game", ({ score }) => {
         '^': [sprite('evil-shroom'), solid(), 'dangerous'],
         '(': [sprite('pipe-bottom-left'), solid(), scale(0.5)],
         ')': [sprite('pipe-bottom-right'), solid(), scale(0.5)],
-        '-': [sprite('pipe-top-left'), solid(), scale(0.5)],
-        '+': [sprite('pipe-top-right'), solid(), scale(0.5)],
+        '-': [sprite('pipe-top-left'), solid(), scale(0.5), 'pipe'],
+        '+': [sprite('pipe-top-right'), solid(), scale(0.5), 'pipe'],
         '#': [sprite('mushroom'), solid(), 'mushroom', body()],
+        '!': [sprite('blue-block'), solid(), scale(0.5)],
+        'b': [sprite('blue-brick'), solid(), scale(0.5)],
+        'z': [sprite('blue-evil-shroom'), solid(), scale(0.5), 'dangerous'],        
+        '@': [sprite('blue-surprise'), solid(), scale(0.5), 'coin-surprise'],
+        'x': [sprite('blue-steel'), solid(), scale(0.5)],
     }
 
-    const gameLevel = addLevel(map, levelCfg)
+    const gameLevel = addLevel(maps[level], levelCfg)
 
     const scoreLabel = add([
         text(score),
@@ -78,7 +97,7 @@ scene("game", ({ score }) => {
         }
     ])
 
-    add ([text('level ' +  'test', pos(4,6))])
+    add ([text('level ' +  parseInt(level + 1)), pos(50,6)])
 
     function big() {
         let timer = 0
@@ -168,6 +187,15 @@ scene("game", ({ score }) => {
         }
     })
 
+    player.collides('pipe', () => {
+        keyPress('down', () => {
+            go('game', {
+                level: (level + 1),
+                score: scoreLabel.value
+            })
+        })
+    })
+
     keyDown('left', () => {
         player.move(-MOVE_SPEED, 0)
     })
@@ -194,4 +222,4 @@ scene('lose', ({ score }) => {
     add([text(score, 32), origin('center'), pos(width()/2, height()/2)])
 })
 
-start("game", { score: 0})
+start("game", {level: 0, score: 0})
