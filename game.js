@@ -10,6 +10,9 @@ const MOVE_SPEED = 120
 const JUMP_FORCE = 375
 let CURRENT_JUMP_FORCE = JUMP_FORCE
 const BIG_JUMP_FORCE = 500
+const ENEMY_SPEED = 20
+let isJumping = true
+const DEATH_FALL = 400
 
 
 loadRoot('https://i.imgur.com/')
@@ -32,7 +35,7 @@ loadSprite('blue-steel', 'gqVoI2b.png')
 loadSprite('blue-evil-shroom', 'SvV4ueD.png')
 loadSprite('blue-surprise', 'RMqCc1G.png')
 
-scene("game", () => {
+scene("game", ({ score }) => {
     layers(['bg', 'obj', 'ui'], 'obj')
 
     const map = [
@@ -43,9 +46,8 @@ scene("game", () => {
         '                                  ',
         '     %  =*=%=                     ',
         '                                  ',
-        '                                  ',
         '                         -+       ',
-        '                    ^  ^ ()       ',
+        '                   ^   ^ ()       ',
         '===========================  =====',
     ]
 
@@ -57,7 +59,7 @@ scene("game", () => {
         '%': [sprite('surprise'), solid(), 'coin-surprise'],
         '*': [sprite('surprise'), solid(), 'mushroom-surprise'],
         '}': [sprite('unboxed'), solid()],
-        '^': [sprite('evil-shroom'), solid()],
+        '^': [sprite('evil-shroom'), solid(), 'dangerous'],
         '(': [sprite('pipe-bottom-left'), solid(), scale(0.5)],
         ')': [sprite('pipe-bottom-right'), solid(), scale(0.5)],
         '-': [sprite('pipe-top-left'), solid(), scale(0.5)],
@@ -68,11 +70,11 @@ scene("game", () => {
     const gameLevel = addLevel(map, levelCfg)
 
     const scoreLabel = add([
-        text('test'),
+        text(score),
         pos(30, 6),
         layer('ui'),
         {
-            value: 'test',
+            value: score,
         }
     ])
 
@@ -147,6 +149,25 @@ scene("game", () => {
         scoreLabel.text = scoreLabel.value
     })
 
+    action('dangerous', (d) => {
+        d.move(-ENEMY_SPEED, 0)
+    })
+
+    player.collides('dangerous', (d) => {
+        if(isJumping){
+            destroy(d)
+        } else {
+            go('lose', {score: scoreLabel.value})
+        }
+    })
+
+    player.action(() => {
+        camPos(player.pos)
+        if (player.pos.y >= DEATH_FALL) {
+            go('lose', { score: scoreLabel.value})
+        }
+    })
+
     keyDown('left', () => {
         player.move(-MOVE_SPEED, 0)
     })
@@ -155,12 +176,22 @@ scene("game", () => {
         player.move(MOVE_SPEED, 0)
     })
 
-    keyPress('space', () => {
-        if(player.grounded()) {
-            player.jump(CURRENT_JUMP_FORCE) 
+    player.action(() => {
+        if(player.grounded()){
+            isJumping = false
         }
     })
 
+    keyPress('space', () => {
+        if(player.grounded()) {
+            isJumping = true
+            player.jump(CURRENT_JUMP_FORCE) 
+        }
+    })
 })
 
-start("game")
+scene('lose', ({ score }) => {
+    add([text(score, 32), origin('center'), pos(width()/2, height()/2)])
+})
+
+start("game", { score: 0})
