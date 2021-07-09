@@ -59,7 +59,7 @@ scene("game", ({ level, score }) => {
         'b                                  b',
         'b     @@@@@              x x       b',
         'b                      x x x       b',
-        'b                    x x x x  x -+ b',
+        'b   x                x x x x  x -+ b',
         'b           z    z x x x x x  x () b',
         '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
     ],
@@ -71,9 +71,9 @@ scene("game", ({ level, score }) => {
         '=      =%%=%=&                      =',
         '=                                   =',
         '=                                   =',
-        '=   ==&%  %==*  ==&                 =',
-        '=                                   =',
-        '=                    ==          -+ =',
+        '=   ==&%  %==*=  ==&                =',
+        '=                     =             =',
+        '=                                -+ =',
         '=                          ^     () =',
         '=====================================',
         
@@ -97,7 +97,7 @@ scene("game", ({ level, score }) => {
         '#': [sprite('mushroom'), solid(), 'mushroom', body()],
         '!': [sprite('blue-block'), solid(), scale(0.5)],
         'b': [sprite('blue-brick'), solid(), scale(0.5)],
-        'z': [sprite('blue-evil-shroom'), solid(), scale(0.5), 'dangerous'],        
+        'z': [sprite('blue-evil-shroom'), solid(), scale(0.5), 'dangerous', body()],        
         '@': [sprite('blue-surprise'), solid(), scale(0.5), 'coin-surprise'],
         'x': [sprite('blue-steel'), solid(), scale(0.5)],
     }
@@ -244,6 +244,37 @@ scene("game", ({ level, score }) => {
 
 scene('lose', ({ score }) => {
     add([text(score, 32), origin('center'), pos(width()/2, height()/2)])
+
+    function addButton(txt,p, f) {
+        const restart = add([
+            pos(p),
+            rect(60,30),
+            origin('center'),
+            color(1,1,1),
+        ]);
+
+        add([
+            text(txt),
+            pos(p),
+            origin('center'),
+            color(0,0,0),
+        ]);
+
+        restart.action(() => {
+            if (restart.isHovered()) {
+                restart.color = rgb(0.8, 0.8, 0.8);
+                if (mouseIsClicked()) {
+                    f();
+                }
+            } else {
+                restart.bg = rgb(1,1,1);
+            }
+        });
+    }
+
+    addButton('Restart', vec2(200, 200), () => {
+        window.location.reload();
+    })
 })
 
 start("game", {level: 0, score: 0})
