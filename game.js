@@ -62,6 +62,21 @@ scene("game", ({ level, score }) => {
         'b                    x x x x  x -+ b',
         'b           z    z x x x x x  x () b',
         '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
+    ],
+    [
+        '=                                   =',
+        '=                                   =',
+        '=                                   =',
+        '=                                   =',
+        '=      =%%=%=&                      =',
+        '=                                   =',
+        '=                                   =',
+        '=   ==&%  %==*  ==&                 =',
+        '=                                   =',
+        '=                    ==          -+ =',
+        '=                          ^     () =',
+        '=====================================',
+        
     ]
     ]
 
@@ -72,8 +87,9 @@ scene("game", ({ level, score }) => {
         '$': [sprite('coin'), 'coin'],
         '%': [sprite('surprise'), solid(), 'coin-surprise'],
         '*': [sprite('surprise'), solid(), 'mushroom-surprise'],
+        '&': [sprite('surprise'), solid(), 'evil-surprise'],
         '}': [sprite('unboxed'), solid()],
-        '^': [sprite('evil-shroom'), solid(), 'dangerous'],
+        '^': [sprite('evil-shroom'), solid(), 'dangerous', body()],
         '(': [sprite('pipe-bottom-left'), solid(), scale(0.5)],
         ')': [sprite('pipe-bottom-right'), solid(), scale(0.5)],
         '-': [sprite('pipe-top-left'), solid(), scale(0.5), 'pipe'],
@@ -157,6 +173,14 @@ scene("game", ({ level, score }) => {
         }
     })
 
+    player.on('headbump', (obj) => {
+        if (obj.is('evil-surprise')) {
+            gameLevel.spawn('^', obj.gridPos.sub(0,1))
+            destroy(obj)
+            gameLevel.spawn('}', obj.gridPos.sub(0,0))
+        }
+    })
+
     player.collides('mushroom', (m) => {
         destroy(m)
         player.bigify(8)
@@ -190,7 +214,7 @@ scene("game", ({ level, score }) => {
     player.collides('pipe', () => {
         keyPress('down', () => {
             go('game', {
-                level: (level + 1),
+                level: (level + 1) % maps.length,
                 score: scoreLabel.value
             })
         })
